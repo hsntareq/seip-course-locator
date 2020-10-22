@@ -350,7 +350,6 @@ $training_institutes = $wpdb->get_results(
             width: '100%'
         });
 
-
         $('#sector_name,#course_name,#location,#training_partner').on('change', function (e) {
 
             var effector = this.id;
