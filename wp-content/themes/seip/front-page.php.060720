@@ -1,0 +1,264 @@
+<?php
+
+$apiPopulateDashboardData = wp_remote_post(
+  'https://tms.seip-fd.gov.bd/tmsApi/apiPopulateDashboardData',
+  array(
+    'method' => 'POST',
+    'timeout' => 15,
+    'body' => array(
+      'api_key' => '123456seip7654321',
+    )
+  )
+);
+
+
+$dashboard_populated_data = json_decode($apiPopulateDashboardData['body']);
+?>
+<?php get_header() ?>
+
+<div class="w-100 flex-fill overflow-h">
+  <div class="home-wrap h-100 d-flex flex-column">
+    <div class="banner">
+      <div class="banner-contents">
+        <?php
+        $total_target = $dashboard_populated_data->data->total_target;
+        $total_enrollment = $dashboard_populated_data->data->total_enrollment;
+        $total_female_enrollment = $dashboard_populated_data->data->total_female_enrollment;
+        $total_certification = $dashboard_populated_data->data->total_certification;
+        $total_job_placement = $dashboard_populated_data->data->total_job_placement;
+
+        $partners = $dashboard_populated_data->data->entity_count;
+        $update_time = $dashboard_populated_data->data->update_time;
+
+        $entity_count = $dashboard_populated_data->data->entity_count;
+        $institute_count = $dashboard_populated_data->data->institute_count;
+        $course_count = $dashboard_populated_data->data->unique_course_count;
+        $trainers_count = $dashboard_populated_data->data->trainers_count;
+        $assessors_count = $dashboard_populated_data->data->assessors_count;
+        ?>
+      </div>
+      <div class="slider">
+        <?php
+        if ($dashboard_populated_data) {
+          if (get_field('banner_slides', 'option')) {
+            foreach (get_field('banner_slides', 'option') as $banner_slide) {
+              ?>
+              <div>
+                <img
+                        src="<?= $banner_slide['banner_image'] ? $banner_slide['banner_image'] : '/images/slider/01.jpg' ?>"
+                        alt="slide">
+                <div class="banner-content flex-fill align-items-center d-flex">
+                  <div class="container-fluid">
+
+                    <div class="header-content text-white text-center float-lg-right text-slide-1">
+                      <div class="p-3 mb-0"><span
+                                class="display-6"><?= __('Training Statistics') ?></span>
+                        <small>(As of <?= __($update_time) ?>)</small>
+                      </div>
+
+                      <div class="d-flex fs-16 fs-10 justify-content-between">
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-primary-tr py-2 col-lg">
+                          <p>Target</p>
+                          <p><?= number_format($total_target) ?></p>
+                        </div>
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-warning-tr py-2 col-lg">
+                          <p>Enrolled</p>
+                          <p><?= number_format($total_enrollment) ?></p>
+                        </div>
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-secondary-tr py-2 col-lg">
+                          <p>Female</p>
+                          <p><?= number_format($total_female_enrollment) ?></p>
+                        </div>
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-info-tr py-2 col-lg">
+                          <p>Certified</p>
+                          <p><?= number_format($total_certification) ?></p>
+                        </div>
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-danger-tr py-2 col-lg">
+                          <p>Employed</p>
+                          <p><?= number_format($total_job_placement) ?></p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="header-content text-white text-center float-lg-right text-slide-2">
+
+                      <div class="p-3 mb-0"><span
+                                class="display-6"><?= __('Training Statistics') ?></span>
+                        <small>(As of <?= __($update_time) ?>)</small>
+                      </div>
+                      <div class="d-flex fs-16 fs-10 justify-content-between">
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-primary-tr py-2 col-lg">
+                          <p>Partners</p>
+                          <p><?= number_format($entity_count) ?></p>
+                        </div>
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-warning-tr py-2 col-lg">
+                          <p>Institute</p>
+                          <p><?= number_format($institute_count) ?></p>
+                        </div>
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-secondary-tr py-2 col-lg">
+                          <p>Course</p>
+                          <p><?= number_format($course_count) ?></p>
+                        </div>
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-info-tr py-2 col-lg">
+                          <p>Trainer</p>
+                          <p><?= number_format($trainers_count) ?></p>
+                        </div>
+                        <div class="flex-lg-fill px-0 px-lg-3 bg-danger-tr py-2 col-lg">
+                          <p>Assessor</p>
+                          <p><?= number_format($assessors_count) ?></p>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+              <?php
+            }
+          }
+        } else {
+          echo 'Data retrive issue from database...';
+        }
+        ?>
+      </div>
+    </div>
+
+    <nav class="main-nav">
+      <div class="container-fluid d-flex justify-content-between">
+        <?= wp_nav_menu(array(
+          'theme_location' => 'main_menu'
+        )) ?>
+        <div class="search-wrap position-relative">
+          <?php get_search_form(); ?>
+        </div>
+    </nav>
+    <?php
+    $ticker_args = array(
+      'post_type' => array('post', 'admission-circular', 'notices'),
+      'post_status' => 'publish',
+      'posts_per_page' => 16,
+      'meta_key' => 'news_ticker',
+      'meta_value' => true,
+      'tax_query' => [
+        [
+          'taxonomy' => 'category',
+          'field' => 'slug',
+          'terms' => ['expired'],
+          'operator' => 'NOT IN'
+        ],
+        [
+          'taxonomy' => 'circular-category',
+          'field' => 'slug',
+          'terms' => ['expired'],
+          'operator' => 'NOT IN'
+        ],
+        [
+          'taxonomy' => 'notice',
+          'field' => 'slug',
+          'terms' => ['expired'],
+          'operator' => 'NOT IN'
+        ],
+      ],
+    );
+    $ticker_posts = new WP_Query($ticker_args);
+    //pr($ticker_posts);die;
+    ?>
+    <div class="ticker-container">
+      <div class="ticker-wrap">
+        <div class="ticker">
+          <?php foreach ($ticker_posts->posts as $ticker) { ?>
+            <div class="ticker__item">
+              <a href="<?= get_permalink($ticker->ID) ?>"><?= $ticker->post_title ?></a>
+            </div>
+          <?php } ?>
+        </div>
+      </div>
+    </div>
+    <div class="h-100 overflow-h">
+      <div class="content-wrap py-3 h-100 overflow-h">
+        <div class="container-fluid h-100 overflow-h">
+          <div class="content-area h-100 overflow-h">
+
+            <div class="row h-100 overflow-h">
+              <div class="col-lg-4 mb-4 mb-lg-0 h-100 overflow-h">
+                <div class="card h-100 overflow-h">
+                  <div class="card-header">
+                    <a href="<?= get_permalink(get_option('page_for_posts')); ?>"
+                       class="card-header mb-0 h5 text-truncate font-weight-bold"><?= get_field('featured_title_one', 'option') ?></a>
+                  </div>
+                  <ul class="list-group list-group-flush list-sm">
+                    <?php
+                    $latest_news = get_posts(
+                      array(
+                        'numberposts' => 16,
+                        'post_type' => 'post',
+                      )
+                    );
+                    foreach ($latest_news as $news) {
+                      ?>
+                      <a href="<?= get_permalink($news->ID) ?>"
+                         class="list-group-item text-truncate <?= has_term('expired', 'category', $news) == true ? 'expired' : '' ?> <?= get_field('post_scheduling', $news->ID) == true ? 'new-post' : '' ?>"><?= __($news->post_title) ?></a>
+                      <?php
+                    }
+                    ?>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-lg-4 mb-4 mb-lg-0 h-100 overflow-h">
+                <div class="card h-100 overflow-h">
+                  <div class="card-header">
+                    <a href="<?= get_post_type_archive_link('admission-circular'); ?>"
+                       class="card-header mb-0 h5 text-truncate font-weight-bold"><?= get_field('featured_title_two', 'option') ?></a>
+                  </div>
+                  <ul class="list-group list-group-flush list-sm">
+                    <?php
+                    $admission_circular = get_posts(
+                      array(
+                        'numberposts' => 16,
+                        'post_type' => 'admission-circular',
+                      )
+                    );
+                    foreach ($admission_circular as $circular) {
+                      ?>
+                      <a href="<?= get_permalink($circular->ID) ?>"
+                         class="list-group-item text-truncate <?= has_term('expired', 'circular-category', $circular) == true ? 'expired' : '' ?> <?= get_field('post_scheduling', $circular->ID) == true ? 'new-post' : '' ?>"><?= __($circular->post_title) ?></a>
+                      <?php
+                    }
+                    ?>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-lg-4 mb-4 mb-lg-0 h-100 overflow-h">
+                <div class="card h-100 overflow-h">
+                  <div class="card-header">
+                    <a href="<?= home_url('notice/office-order'); ?>"
+                       class="card-header mb-0 h5 text-truncate font-weight-bold"><?= get_field('featured_title_three', 'option') ?></a>
+                  </div>
+                  <ul class="list-group list-group-flush list-sm">
+                    <?php
+                    $notices = get_posts(
+                      array(
+                        'numberposts' => 16,
+                        'post_type' => 'notices'
+                      )
+                    );
+                    foreach ($notices as $notice) {
+                      ?>
+                      <a href="<?= get_permalink($notice->ID) ?>"
+                         class="list-group-item text-truncate <?= has_term('expired', 'notice', $notice) == true ? 'expired' : '' ?> <?= get_field('post_scheduling', $notice->ID) == true ? 'new-post' : '' ?>"><?= __($notice->post_title) ?></a>
+                      <?php
+                    }
+                    ?>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<?php get_footer() ?>
