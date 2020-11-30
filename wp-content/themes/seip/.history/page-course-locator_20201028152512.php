@@ -154,11 +154,11 @@ $training_institutes = $wpdb->get_results(
                     'course_title': $('#course_title').val(),
                 },
                 success: function (data) {
-                    console.log(data);
                     $.each(data, function (key, dataset) {
                         var html = '<option value="">-Select-</option>';
                         $.each(dataset, function (index, value) {
                             var selected = (index == effectorVal) ? 'selected' : '';
+                            console.log(selected)
                             html += '<option value="' + index + '" ' + selected + '>' + value + '</option>';
                         });
                         $('#' + key).html(html);

@@ -165,6 +165,7 @@ function prepareTrainingInstituteData($sectorName, $courseId, $location, $traini
     WHERE c.id = b.course_info_id
     AND i.id = b.training_institute_id";
 
+
     if (!empty($courseId)) {
         $sql .= " AND c.id = $courseId";
     }
@@ -177,6 +178,9 @@ function prepareTrainingInstituteData($sectorName, $courseId, $location, $traini
     if (!empty($trainingPartner)) {
         $sql .= " AND c.entity_id = $trainingPartner";
     }
+
+    
+    
     
     global $wpdb;
     $data = $wpdb->get_results(
@@ -191,3 +195,11 @@ function prepareTrainingInstituteData($sectorName, $courseId, $location, $traini
     }
     return $output;
 }
+
+// $sql = "SELECT DISTINCT(c.course_name), b.start_date, b.training_location, i.institute_name, i.email, i.phone, i.web_url
+// FROM tms_batch_info b, tms_course_info c, tms_entity e, tms_training_institutes i
+// WHERE c.course_sector= 'Agro Food'
+// AND c.id=251
+// AND i.present_district='RAJSHAHI'
+// AND e.id=30 
+// GROUP BY course_name";

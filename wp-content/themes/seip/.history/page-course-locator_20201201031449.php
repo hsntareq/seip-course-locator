@@ -159,6 +159,7 @@ $training_institutes = $wpdb->get_results(
                         var html = '<option value="">-Select-</option>';
                         $.each(dataset, function (index, value) {
                             var selected = (index == effectorVal) ? 'selected' : '';
+                            console.log(selected)
                             html += '<option value="' + index + '" ' + selected + '>' + value + '</option>';
                         });
                         $('#' + key).html(html);

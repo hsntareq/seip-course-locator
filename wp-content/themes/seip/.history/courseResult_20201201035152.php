@@ -9,33 +9,39 @@ $courseId = $_POST['course_name'];
 $location = $_POST['location'];
 $trainingPartner = $_POST['training_partner'];
 $trainingInstitute = $_POST['training_institute'];
+$courseTitle = $_POST['course_title'];
 $searchSubmit = $_POST['search_courses'];
+//pr($request);
 
-if ($request == 'sector_name') {
-    $dataset['course_name'] = prepareCourseData($sectorName);
-    $dataset['location'] = prepareLocationData($sectorName, null);
-    $dataset['training_partner'] = prepareTrainingPartnerData($sectorName, null, null);
-    $dataset['training_institute'] = prepareTrainingInstituteData($sectorName, null, null, null);
-    $dataset['batch_info'] = prepareBatchData($sectorName);
-}
-if ($request == 'course_name') {
-    $dataset['location'] = prepareLocationData($sectorName, $courseId);
-    $dataset['training_partner'] = prepareTrainingPartnerData($sectorName, $courseId, null);
-    $dataset['training_institute'] = prepareTrainingInstituteData($sectorName, $courseId, null, null);
-    $dataset['batch_info'] = prepareBatchData($sectorName, $courseId);
-}
-if ($request == 'location') {
-    $dataset['training_partner'] = prepareTrainingPartnerData($sectorName, $courseId, $location);
-    $dataset['training_institute'] = prepareTrainingInstituteData($sectorName, $courseId, $location, null);
-    $dataset['batch_info'] = prepareBatchData($sectorName, $courseId, $location);
-}
-if ($request == 'training_partner') {
-    $dataset['training_institute'] = prepareTrainingInstituteData($sectorName, $courseId, $location, $trainingPartner);
-    $dataset['batch_info'] = prepareBatchData($sectorName, $courseId, $location, $trainingPartner);
-}
+if ($searchSubmit) {
+    $dataset['batch_info'] = prepareBatchData('', '', '', '', $courseTitle);
+} else {
+    if ($request == 'sector_name') {
+        $dataset['course_name'] = prepareCourseData($sectorName);
+        $dataset['location'] = prepareLocationData($sectorName, $courseId);
+        $dataset['training_partner'] = prepareTrainingPartnerData($sectorName, $courseId, $location);
+        $dataset['training_institute'] = prepareTrainingInstituteData($sectorName, $courseId, $location, $trainingPartner);
+        $dataset['batch_info'] = prepareBatchData($sectorName, null, null, null, null);
+    }
+    if ($request == 'course_name') {
+        $dataset['location'] = prepareLocationData($sectorName, $courseId);
+        $dataset['training_partner'] = prepareTrainingPartnerData($sectorName, $courseId, $location);
+        $dataset['training_institute'] = prepareTrainingInstituteData($sectorName, $courseId, $location, $trainingPartner);
+        $dataset['batch_info'] = prepareBatchData($sectorName, $courseId);
+    }
+    if ($request == 'location') {
+        $dataset['training_partner'] = prepareTrainingPartnerData($sectorName, $courseId, $location);
+        $dataset['training_institute'] = prepareTrainingInstituteData($sectorName, $courseId, $location, $trainingPartner);
+        $dataset['batch_info'] = prepareBatchData($sectorName, $courseId, $location, null, null);
+    }
+    if ($request == 'training_partner') {
+        $dataset['training_institute'] = prepareTrainingInstituteData($sectorName, $courseId, $location, $trainingPartner);
+        $dataset['batch_info'] = prepareBatchData($sectorName, $courseId, $location, $trainingPartner, null);
+    }
 
-if ($request == 'training_institute') {
-    $dataset['batch_info'] = prepareBatchData($sectorName, $courseId, $location, $trainingPartner, $trainingInstitute);
+    if ($request == 'training_institute') {
+        $dataset['batch_info'] = prepareBatchData($sectorName, $courseId, $location, $trainingPartner, $trainingInstitute);
+    }
 }
 
 
@@ -63,7 +69,7 @@ AND b.active_status=1 ";
         $sql .= " AND e.id = $trainingPartner ";
     }
     $sql .= " GROUP BY institute_name";
-
+   die($sql);
     global $wpdb;
     $data = $wpdb->get_results(
         $wpdb->prepare($sql)
@@ -94,7 +100,7 @@ function prepareCourseData($sectorName)
     return $output;
 }
 
-function prepareLocationData($sectorName, $courseId=null)
+function prepareLocationData($sectorName, $courseId)
 {
     $sql = "SELECT DISTINCT(i.present_district)
         FROM tms_course_info c, tms_batch_info b, tms_training_institutes i
@@ -142,6 +148,7 @@ function prepareTrainingPartnerData($sectorName, $courseId, $location)
         if (!empty($sectorName)) {
             $sql .= " AND c.course_sector = '$sectorName'";
         }
+        // AND course_sector = '$sector_name'"
     }
 
     global $wpdb;
@@ -165,6 +172,7 @@ function prepareTrainingInstituteData($sectorName, $courseId, $location, $traini
     WHERE c.id = b.course_info_id
     AND i.id = b.training_institute_id";
 
+
     if (!empty($courseId)) {
         $sql .= " AND c.id = $courseId";
     }
@@ -177,6 +185,9 @@ function prepareTrainingInstituteData($sectorName, $courseId, $location, $traini
     if (!empty($trainingPartner)) {
         $sql .= " AND c.entity_id = $trainingPartner";
     }
+
+    
+    
     
     global $wpdb;
     $data = $wpdb->get_results(
@@ -191,3 +202,11 @@ function prepareTrainingInstituteData($sectorName, $courseId, $location, $traini
     }
     return $output;
 }
+
+// $sql = "SELECT DISTINCT(c.course_name), b.start_date, b.training_location, i.institute_name, i.email, i.phone, i.web_url
+// FROM tms_batch_info b, tms_course_info c, tms_entity e, tms_training_institutes i
+// WHERE c.course_sector= 'Agro Food'
+// AND c.id=251
+// AND i.present_district='RAJSHAHI'
+// AND e.id=30 
+// GROUP BY course_name";
